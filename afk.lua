@@ -1,57 +1,56 @@
--- Авто-реджоин + Умный автокликер
+-- Ожидание загрузки игры
 repeat task.wait() until game:IsLoaded()
 
 local TeleportService = game:GetService("TeleportService")
 local GuiService = game:GetService("GuiService")
-local VirtualInputManager = game:GetService("VirtualInputManager")
+local VirtualUser = game:GetService("VirtualUser")
+local Players = game:GetService("Players")
 
-local delayAfterLoad = 10 -- Ждем прогрузки интерфейса
+-- НАСТРОЙКИ:
+local clickX = 920 -- Сдвинуто под твой скриншот (правее)
+local clickY = 220 -- Сдвинуто под твой скриншот (выше)
+local delayAfterLoad = 15 -- Ждем прогрузки интерфейса
+local VIP_LINK = "" -- СЮДА ВСТАВЬ ССЫЛКУ НА СВОЙ ВИП СЕРВЕР (в кавычках)
 
-local function doAutoClick()
+local function doClick()
     task.wait(delayAfterLoad)
-    
-    -- Ищем кнопку Auto Click в интерфейсе игрока
-    local player = game.Players.LocalPlayer
-    local pGui = player:WaitForChild("PlayerGui")
-    
-    -- Пытаемся найти кнопку по названию или тексту (обычно они в ScreenGui)
-    local autoClickBtn = nil
-    for _, v in pairs(pGui:GetDescendants()) do
-        if v:IsA("TextLabel") and v.Text:find("Auto Click") then
-            autoClickBtn = v.Parent -- Обычно текст лежит внутри кнопки
-            break
-        elseif v:IsA("ImageButton") or v:IsA("TextButton") then
-            if v.Name:lower():find("autoclick") then
-                autoClickBtn = v
-                break
-            end
-        end
-    end
-
-    if autoClickBtn then
-        print("Кнопка найдена! Начинаю кликать...")
-        while task.wait(0.5) do
-            -- Кликаем прямо по центру найденной кнопки
-            local absPos = autoClickBtn.AbsolutePosition
-            local absSize = autoClickBtn.AbsoluteSize
-            local centerX = absPos.X + (absSize.X / 2)
-            local centerY = absPos.Y + (absSize.Y / 2)
-            
-            VirtualInputManager:SendMouseButtonEvent(centerX, centerY, 0, true, game, 1)
-            VirtualInputManager:SendMouseButtonEvent(centerX, centerY, 0, false, game, 1)
-        end
-    else
-        warn("Не удалось найти кнопку Auto Click в интерфейсе. Проверь название!")
-    end
+    -- Пробуем нажать по координатам
+    VirtualUser:CaptureController()
+    VirtualUser:ClickButton1(Vector2.new(clickX, clickY))
+    print("Нажал на Auto Click по координатам!")
 end
+
+-- Запуск клика
+task.spawn(doClick)
 
 -- Логика перезахода
 local function doRejoin()
-    TeleportService:Teleport(game.PlaceId, game.Players.LocalPlayer)
+    task.wait(3)
+    if VIP_LINK ~= "" then
+        -- Если ты указал ссылку на випку, скрипт попытается зайти туда
+        -- Но самый надежный способ для вип-сервера — обычный перезаход, 
+        -- если ты УЖЕ запустил скрипт, находясь на вип-сервере.
+        TeleportService:Teleport(game.PlaceId, Players.LocalPlayer)
+    else
+        TeleportService:Teleport(game.PlaceId, Players.LocalPlayer)
+    end
 end
 
+-- Защита от вылетов и ошибок
 GuiService.ErrorMessageChanged:Connect(doRejoin)
 
--- Запуск
-task.spawn(doAutoClick)
-print("Система AFK с автопоиском кнопки запущена!")
+game:GetService("CoreGui").RobloxPromptGui.promptOverlay.ChildAdded:Connect(function(child)
+    if child.Name == "ErrorPrompt" then
+        task.wait(2)
+        doRejoin()
+    end
+end)
+
+-- Анти-АФК (чтобы не кикало за бездействие)
+Players.LocalPlayer.Idled:Connect(function()
+    VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+    task.wait(1)
+    VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+end)
+
+print("Система AFK + AutoClick + Rejoin запущена!")
