@@ -11,7 +11,7 @@ local keyDelay = 0.5   -- Пауза между нажатиями кнопок
 
 local function doCombo()
     task.wait(startDelay)
-    print("Начинаю выполнение комбинации: /, D, Enter")
+    print("Начинаю выполнение комбинации: \, D, Enter")
 
     -- 1. Нажимаем "/"
     VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Slash, false, game)
