@@ -1,48 +1,34 @@
 -- Ждем загрузку игры
 repeat task.wait() until game:IsLoaded()
 
-local VirtualInputManager = game:GetService("VirtualInputManager")
+local VirtualUser = game:GetService("VirtualUser")
 local TeleportService = game:GetService("TeleportService")
 local GuiService = game:GetService("GuiService")
 
--- Настройки задержек
-local startDelay = 20 -- Ждем прогрузки интерфейса
-local keyDelay = 0.5   -- Пауза между нажатиями кнопок
+-- ТВОИ ТОЧНЫЕ НАСТРОЙКИ:
+local clickX = 2200 
+local clickY = 750 
+local delayBeforeClick = 20 -- Ждем 20 секунд, чтобы всё прогрузилось
 
-local function doCombo()
-    task.wait(startDelay)
-    print("Начинаю выполнение комбинации: \, D, Enter")
-
-    -- 1. Нажимаем "/"
-    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Slash, false, game)
-    task.wait(0.1)
-    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Slash, false, game)
-    task.wait(keyDelay)
-
-    -- 2. Нажимаем "D" (вправо)
-    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.D, false, game)
-    task.wait(0.1)
-    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.D, false, game)
-    task.wait(keyDelay)
-
-    -- 3. Нажимаем "Enter" (подтверждение)
-    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
-    task.wait(0.1)
-    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
-
-    print("Комбинация выполнена!")
+-- Функция разового клика
+local function doSingleClick()
+    task.wait(delayBeforeClick)
+    VirtualUser:CaptureController()
+    -- Кликаем один раз точно в цель
+    VirtualUser:ClickButton1(Vector2.new(clickX, clickY))
+    print("Нажал на кнопку по твоим координатам: " .. clickX .. "x" .. clickY)
 end
 
--- Запуск клика
-task.spawn(doCombo)
+-- Запуск клика при заходе
+task.spawn(doSingleClick)
 
--- Логика возврата на твой VIP
+-- Логика возврата на VIP (если зашел с випки — вернет на випку)
 local function doRejoin()
     task.wait(5)
     TeleportService:Teleport(game.PlaceId, game.Players.LocalPlayer)
 end
 
--- Перезаход при ошибках
+-- Перезаход при вылете или ошибке
 GuiService.ErrorMessageChanged:Connect(doRejoin)
 game:GetService("CoreGui").RobloxPromptGui.promptOverlay.ChildAdded:Connect(function(child)
     if child.Name == "ErrorPrompt" then
@@ -51,11 +37,10 @@ game:GetService("CoreGui").RobloxPromptGui.promptOverlay.ChildAdded:Connect(func
     end
 end)
 
--- Анти-АФК
+-- Анти-АФК чтобы не кикало за бездействие
 game.Players.LocalPlayer.Idled:Connect(function()
-    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Space, false, game)
-    task.wait(0.1)
-    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Space, false, game)
+    VirtualUser:CaptureController()
+    VirtualUser:ClickButton2(Vector2.new(0,0))
 end)
 
-print("Скрипт Combo-Click запущен. Жду 20 сек...")
+print("Скрипт запущен! Нажмет на X=2200 Y=750 через 20 секунд.")
