@@ -10,7 +10,7 @@ local Players = game:GetService("Players")
 local clickX = 920 -- Сдвинуто под твой скриншот (правее)
 local clickY = 220 -- Сдвинуто под твой скриншот (выше)
 local delayAfterLoad = 15 -- Ждем прогрузки интерфейса
-local VIP_LINK = "" -- СЮДА ВСТАВЬ ССЫЛКУ НА СВОЙ ВИП СЕРВЕР (в кавычках)
+local VIP_LINK = https://www.roblox.com/share?code=3046f09d83e2924e852a2afa6a06cf23&type=Server"" -- СЮДА ВСТАВЬ ССЫЛКУ НА СВОЙ ВИП СЕРВЕР (в кавычках)
 
 local function doClick()
     task.wait(delayAfterLoad)
